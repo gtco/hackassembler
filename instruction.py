@@ -1,3 +1,5 @@
+from symbol_table import SymbolTable
+
 class Instruction:
 
     jump_keywords = {'JGT': 0b001,
@@ -31,15 +33,18 @@ class Instruction:
                      'D-M':  0b1010011000000, 'M-D':  0b1000111000000,
                      'D&M':  0b1000000000000, 'D|M':  0b1010101000000}
 
-    def __init__(self, text):
+    def __init__(self, text, symbol_table):
         self.text = text
         if self.text.startswith('@'):
             self.instruction_type = "A"
-            self.address = self.text[1:]
-            if self.address.isdigit():
-                self.value = int(self.address)
+            self.label = self.text[1:]
+            if self.label.isdigit():
+                self.value = int(self.label)
             else:
-                raise ValueError("Expected an integer value " + self.text)
+                if symbol_table.contains(self.label):
+                    self.value = symbol_table.get_address(self.label)
+                else:
+                    self.value = symbol_table.add_variable(self.label)
         else:
             self.instruction_type = "C"
             self.value = 0b1110000000000000
